@@ -2,7 +2,7 @@ import os
 from datasetLoader import load_cifar10
 
 # Define the dataset path
-DATASET_DIR = "../dataset/cifar-10-batches-py"
+DATASET_DIR = "task_1/dataset/cifar-10-batches-py"
 
 # Load CIFAR-10
 train_data, train_labels, test_data, test_labels = load_cifar10(DATASET_DIR)
