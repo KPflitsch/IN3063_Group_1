@@ -19,3 +19,11 @@ main/dataset/cifar-10-batches-py
 *.pyc
 __pycache__/
 .env
+task_1/dataset/cifar-10-batches-py/batches.meta
+task_1/dataset/cifar-10-batches-py/data_batch_1
+task_1/dataset/cifar-10-batches-py/data_batch_2
+task_1/dataset/cifar-10-batches-py/data_batch_3
+task_1/dataset/cifar-10-batches-py/data_batch_4
+task_1/dataset/cifar-10-batches-py/data_batch_5
+task_1/dataset/cifar-10-batches-py/readme.html
+task_1/dataset/cifar-10-batches-py/test_batch

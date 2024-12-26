@@ -1,10 +1,13 @@
 import numpy as np
+import matplotlib.pyplot as plt
+
 
 from task_1.ReLuLayer.ReLu.ReLu import ReLuLayer
 from task_1.Sigmoid.Sigmoid.Sigmoid import SigmoidLayer
 from task_1.core_NN_implementation.fullyConnectedNN import fullyConnectedNN
 from task_1.dropout.dropout import Dropout
 from task_1.softmaxLayer import SoftmaxLayer
+from task_1.dataset.datasetLoader import load_cifar10
 
 
 
@@ -153,16 +156,20 @@ class fullyConnectedNN:
             regularization_loss = 0.5 * self.regularization_rate * sum(np.sum(w) for w in self.weights)
         return loss + regularization_loss
 
+    
     def train(self, X, y, epochs, batch_size=64, X_val=None, y_val=None):
         history = {
             'loss': [],
             'accuracy': [],
             'val_loss': [],
             'val_accuracy': [],
+            'learning_rate': [],
         }
+
         for epoch in range(epochs):
             epoch_loss = 0
             num_batches = 0
+            history['learning_rate'].append(self.learning_rate)
 
             # Mini-batch training
             for i in range(0, X.shape[0], batch_size):
@@ -200,7 +207,57 @@ class fullyConnectedNN:
             else:
                 print(f"Epoch {epoch + 1}/{epochs}, Loss: {epoch_loss:.4f}, Accuracy: {train_accuracy:.4f}")
 
+        self.plot_metrics(history)
+        self.plot_learning_rate(history['learning_rate'])
         return history
+    
+    def plot_metrics(self, history):
+        # Plot training and validation loss
+        plt.figure(figsize=(10, 6))
+
+        # Loss
+        plt.subplot(1, 2, 1)
+        plt.plot(history['loss'], label='Training Loss')
+        if 'val_loss' in history and history['val_loss']:
+            plt.plot(history['val_loss'], label='Validation Loss')
+        plt.title('Loss Over Epochs')
+        plt.xlabel('Epochs')
+        plt.ylabel('Loss')
+        plt.legend()
+
+        # Accuracy
+        plt.subplot(1, 2, 2)
+        plt.plot(history['accuracy'], label='Training Accuracy')
+        if 'val_accuracy' in history and history['val_accuracy']:
+            plt.plot(history['val_accuracy'], label='Validation Accuracy')
+        plt.title('Accuracy Over Epochs')
+        plt.xlabel('Epochs')
+        plt.ylabel('Accuracy')
+        plt.legend()
+
+        plt.tight_layout()
+        plt.show()
+
+    def save_metrics(self, history, filename='training_metrics.png'):
+        # Save metrics to file
+        plt.figure(figsize=(10, 6))
+        plt.plot(history['loss'], label='Training Loss')
+        if 'val_loss' in history:
+            plt.plot(history['val_loss'], label='Validation Loss')
+        plt.title('Loss Over Epochs')
+        plt.xlabel('Epochs')
+        plt.ylabel('Loss')
+        plt.legend()
+        plt.savefig(filename)
+    
+    def plot_learning_rate(self, learning_rates):
+        plt.figure(figsize=(8, 6))
+        plt.plot(learning_rates, label='Learning Rate')
+        plt.title('Learning Rate Decay')
+        plt.xlabel('Epochs')
+        plt.ylabel('Learning Rate')
+        plt.legend()
+        plt.show()
 
     def evaluate(self, X, y):
         # Predict and compute loss
@@ -215,4 +272,4 @@ class fullyConnectedNN:
     def predict(self, X):
         probabilities = self.forward_propagation(X, training=False)
         return np.argmax(probabilities, axis=1)
-
+    
