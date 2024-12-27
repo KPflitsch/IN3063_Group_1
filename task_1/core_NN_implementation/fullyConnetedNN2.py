@@ -1,13 +1,11 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-
 from task_1.ReLuLayer.ReLu.ReLu import ReLuLayer
 from task_1.Sigmoid.Sigmoid.Sigmoid import SigmoidLayer
 from task_1.core_NN_implementation.fullyConnectedNN import fullyConnectedNN
 from task_1.dropout.dropout import Dropout
 from task_1.softmaxLayer import SoftmaxLayer
-from task_1.dataset.datasetLoader import load_cifar10
 
 
 
@@ -207,8 +205,6 @@ class fullyConnectedNN:
             else:
                 print(f"Epoch {epoch + 1}/{epochs}, Loss: {epoch_loss:.4f}, Accuracy: {train_accuracy:.4f}")
 
-        self.plot_metrics(history)
-        self.plot_learning_rate(history['learning_rate'])
         return history
     
     def plot_metrics(self, history):
@@ -238,17 +234,6 @@ class fullyConnectedNN:
         plt.tight_layout()
         plt.show()
 
-    def save_metrics(self, history, filename='training_metrics.png'):
-        # Save metrics to file
-        plt.figure(figsize=(10, 6))
-        plt.plot(history['loss'], label='Training Loss')
-        if 'val_loss' in history:
-            plt.plot(history['val_loss'], label='Validation Loss')
-        plt.title('Loss Over Epochs')
-        plt.xlabel('Epochs')
-        plt.ylabel('Loss')
-        plt.legend()
-        plt.savefig(filename)
     
     def plot_learning_rate(self, learning_rates):
         plt.figure(figsize=(8, 6))
