@@ -3,11 +3,8 @@ import matplotlib.pyplot as plt
 
 from task_1.ReLuLayer.ReLu.ReLu import ReLuLayer
 from task_1.Sigmoid.Sigmoid.Sigmoid import SigmoidLayer
-from task_1.core_NN_implementation.fullyConnectedNN import fullyConnectedNN
 from task_1.dropout.dropout import Dropout
 from task_1.softmaxLayer import SoftmaxLayer
-
-
 
 class fullyConnectedNN:
     def __init__(self, input_size, output_size, hidden_layers,activations=None,learning_rate = 0.001, dropout_rate = None, regularization = 'L2'):
@@ -21,6 +18,9 @@ class fullyConnectedNN:
         dropout_rate (float): Dropout rate
         regularization_rate (float): L2 regularization rate
         """
+
+        # Seed for np.random for reproducibility
+        np.random.seed(21)
 
         # Init params
         self.input_size = input_size
@@ -78,6 +78,9 @@ class fullyConnectedNN:
             # ReLU activation
             activation = self.activations[i]
             a = self.activation_layer[activation].forward(z)
+
+            # Batch normalization
+            a = self.batch_norm(a)
 
             # Use dropout when training and if dropout is enabled
             if training and self.dropout is not None:
@@ -169,6 +172,9 @@ class fullyConnectedNN:
             num_batches = 0
             history['learning_rate'].append(self.learning_rate)
 
+            # Learning rate decay
+            self.update_learning_rate(epoch, decay_rate=0.5, decay_step=10)
+
             # Mini-batch training
             for i in range(0, X.shape[0], batch_size):
                 x_batch = X[i:i + batch_size]
@@ -206,7 +212,18 @@ class fullyConnectedNN:
                 print(f"Epoch {epoch + 1}/{epochs}, Loss: {epoch_loss:.4f}, Accuracy: {train_accuracy:.4f}")
 
         return history
-    
+
+    # Update the learning rate as training continues
+    def update_learning_rate(self, epoch, decay_rate=0.5, decay_step=10):
+        if (epoch + 1 ) % decay_step == 0:
+            self.learning_rate *= decay_rate
+
+    def batch_norm(self, X, gamma = 1, beta = 0, epsilon = 1e-9):
+        mean = np.mean(X, axis=0)
+        variance = np.var(X, axis=0)
+        X_norm = (X - mean) / np.sqrt(variance + epsilon)
+        return gamma * X_norm + beta
+
     def plot_metrics(self, history):
         # Plot training and validation loss
         plt.figure(figsize=(10, 6))
