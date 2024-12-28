@@ -170,10 +170,11 @@ class fullyConnectedNN:
         for epoch in range(epochs):
             epoch_loss = 0
             num_batches = 0
-            history['learning_rate'].append(self.learning_rate)
 
             # Learning rate decay
             self.update_learning_rate(epoch, decay_rate=0.5, decay_step=10)
+
+            history['learning_rate'].append(self.learning_rate)
 
             # Mini-batch training
             for i in range(0, X.shape[0], batch_size):
@@ -207,9 +208,9 @@ class fullyConnectedNN:
                 history['val_loss'].append(val_loss)
                 history['val_accuracy'].append(val_accuracy)
                 print(f"Epoch {epoch + 1}/{epochs}, Loss: {epoch_loss:.4f}, "
-                      f"Accuracy: {train_accuracy:.4f}, Val Loss: {val_loss:.4f}, Val Accuracy: {val_accuracy:.4f}")
+                      f"Accuracy: {train_accuracy:.4f}, Val Loss: {val_loss:.4f}, Val Accuracy: {val_accuracy:.4f}, Learning Rate: {self.learning_rate:.4f}")
             else:
-                print(f"Epoch {epoch + 1}/{epochs}, Loss: {epoch_loss:.4f}, Accuracy: {train_accuracy:.4f}")
+                print(f"Epoch {epoch + 1}/{epochs}, Loss: {epoch_loss:.4f}, Accuracy: {train_accuracy:.4f}, Learning Rate: {self.learning_rate:.4f}")
 
         return history
 
