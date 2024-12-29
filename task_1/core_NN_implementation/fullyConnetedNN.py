@@ -5,9 +5,10 @@ from task_1.ReLuLayer.ReLu.ReLu import ReLuLayer
 from task_1.Sigmoid.Sigmoid.Sigmoid import SigmoidLayer
 from task_1.dropout.dropout import Dropout
 from task_1.softmaxLayer import SoftmaxLayer
+from task_1.Optimiser.optimiser import SGD
 
 class fullyConnectedNN:
-    def __init__(self, input_size, output_size, hidden_layers,activations=None,learning_rate = 0.001, dropout_rate = None, regularization = 'L2'):
+    def __init__(self, input_size, output_size, hidden_layers,activations=None,learning_rate = 0.001, dropout_rate = None, regularization = 'L2', optimiser = None):
         """
         Parameters:
 
@@ -30,7 +31,6 @@ class fullyConnectedNN:
         self.dropout_rate = dropout_rate
         self.regularization = regularization
         self.regularization_rate = 0.01
-        self.optimizer = 'sgd'
 
         # Init activation layers
 
@@ -65,6 +65,8 @@ class fullyConnectedNN:
         self.weights = [np.random.randn(self.layer_sizes[i], self.layer_sizes[i + 1]) * 0.01
                         for i in range(len(self.layer_sizes) - 1)]
         self.biases = [np.zeros((1, self.layer_sizes[i + 1])) for i in range(len(self.layer_sizes) - 1)]
+
+        self.optimiser = optimiser if optimiser is not None else SGD(learning_rate=learning_rate)
 
     def forward_propagation(self, X, training=True):
         inputs = X
@@ -103,33 +105,38 @@ class fullyConnectedNN:
         m = X.shape[0]  # Number of samples
         dz = self.layer_outputs[-1] - y  # Error gradient at output layer
 
-        # Loop through the layers in reverse order
-        for i in reversed(range(len(self.weights))):
-            # Gradient with respect to weights
-            if i > 0:
-                dw = np.dot(self.layer_outputs[i - 1].T, dz) / m
-            else:
-                dw = np.dot(X.T, dz) / m
+        # Optimisers gradients
+        gradients = {}
+        weight_dict = {f'layer_{k}': {'W': self.weights[k], 'b': self.biases[k]} for k in range(len(self.weights))}
 
-            # Gradient with respect to biases
-            db = np.sum(dz, axis=0, keepdims=True) / m
+        # Loop through the layers in reverse
+        for i in reversed(range(len(self.weights))):
+
+            dW = np.dot(self.layer_outputs[i - 1].T, dz) if i > 0 else np.dot(X.T, dz)
+            db = np.sum(dz, axis=0, keepdims=True)
 
             if self.regularization == 'L2':
                 # L2 Regularization for weights
-                dw += self.regularization_rate * self.weights[i]
+                dW += self.regularization_rate * self.weights[i]
             elif self.regularization == 'L1':
                 # L1 Regularization for weights
-                dw += self.regularization_rate * np.sign(self.weights[i])
+                dW += self.regularization_rate * np.sign(self.weights[i])
 
-            # Update weights and biases using SGD
-            # Remove optimizer conditional since we're only using SGD
-            self.weights[i] -= self.learning_rate * dw
-            self.biases[i] -= self.learning_rate * db
+            gradients[f'layer_{i}'] = {'dW': dW, 'db': db}
 
             # Propagate the error gradient to the previous layer
             if i > 0:
                 dz = np.dot(dz, self.weights[i].T) * self.activation_derivative(
                     self.layer_outputs[i - 1], function='relu')
+
+        if set(weight_dict.keys()) != set(gradients.keys()):
+            raise ValueError("Keys in weight_dict and gradients do not match.")
+
+        updated_weights = self.optimiser.update(weight_dict, gradients)
+
+        for i in range(len(updated_weights)):
+            self.weights[i] = updated_weights[f'layer_{i}']['W']
+            self.biases[i] = updated_weights[f'layer_{i}']['b']
 
     def activation_derivative(self, activation_output, function='relu'):
         # ReLU: 1 = positive input, else 0
