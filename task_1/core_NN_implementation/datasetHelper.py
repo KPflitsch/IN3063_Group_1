@@ -1,9 +1,6 @@
 import pickle
 import numpy as np
 
-def test_IDE_issue():
-    print("This new function is recognised and working")
-
 def load_cifar10_batch(file_path):
     with open(file_path, 'rb') as f:
         batch = pickle.load(f, encoding='latin1')
